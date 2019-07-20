@@ -1,6 +1,7 @@
 RewriteEngine On
 
 RewriteRule ^script/(.*)$ script.php?slug=/$1 [L]
+RewriteRule ^tutorial/(.*)$ tutorials/index.php?file=/$1 [L]
 
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

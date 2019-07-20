@@ -11,7 +11,7 @@
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
   <!-- Additional CSS -->
-  <link rel="stylesheet" href="css/index-additional.css">
+  <link rel="stylesheet" href="css/landing-additional.css">
 
   <title>raspi.tools</title>
 

@@ -29,3 +29,22 @@ html, body {
     margin-right: 6px;
 
 }
+
+.btn-tutorial {
+
+    margin-top: 15px;
+
+}
+
+.container-md {
+
+    margin-top: 20px;
+
+}
+
+.container-md h1 {
+
+    border-bottom: 1px solid #ccc;
+    padding-bottom: .3em;
+
+}
