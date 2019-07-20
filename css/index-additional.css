@@ -1,0 +1,31 @@
+html, body {
+
+    height: 100%;
+
+}
+
+.portal {
+
+    text-align: center;
+
+}
+
+.portal h1 {
+
+    font-size: 7rem;
+
+}
+
+.portal sub {
+
+    font-size: 1.7rem;
+
+}
+
+.portal .btn-portal {
+
+    margin-top: 20px;
+    margin-left: 6px;
+    margin-right: 6px;
+
+}
