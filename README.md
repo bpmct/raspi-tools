@@ -21,4 +21,4 @@ If you made changes to the DB structure, be sure to include the modified version
 
 To update to the latest version, simply run a `git pull` or replace your files. Import the latest `tables.sql` if you're OK with erasing your tables.
 
-**Note:** If you don't want to lose your database info, open `tables.sql` and compare the table structures in the file with your table structures. Modify as necessary. Don't import the file as it would drop your tables and re-create. Will be improved later
+**Note:** If you don't want to lose your database info, open `tables.sql` and compare the table structures in the file with your table structures. Modify as necessary. Don't import the file before taking a look as it could your existing tables and re-create. Will be improved later
