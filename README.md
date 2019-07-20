@@ -1,5 +1,5 @@
 # raspi-tools
-A collection of tools &amp; tutorials for getting started with the Raspberry Pi :)
+A collection of tools &amp; tutorials for getting started with the Raspberry Pi 😊
 
 Written (very quickly) with vanilla PHP & MySQL because it was what I knew those technologies best and I wanted to make it quickly.
 
