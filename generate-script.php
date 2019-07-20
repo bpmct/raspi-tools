@@ -94,7 +94,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
     <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" crossorigin="anonymous">
 
     <!-- Additional CSS -->
-    <link rel="stylesheet" href="generate-additional.css">
+    <link rel="stylesheet" href="css/generate-additional.css">
 
     <title>Generate a Raspberry Pi Onboarding Script</title>
 </head>

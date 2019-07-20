@@ -66,7 +66,7 @@ if (isset($_GET['auto-check']) && $_GET['auto-check'] == "on") {
         integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
     <!-- Additional CSS -->
-    <link rel="stylesheet" href="monitor-additional.css">
+    <link rel="stylesheet" href="css/monitor-additional.css">
 
     <title>Raspberry Pis</title>
 </head>
