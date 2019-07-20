@@ -30,6 +30,7 @@ Instructions are from [here](https://learn.adafruit.com/instant-camera-using-ras
     make
     sudo ./install
 4. Open up the receipt printer to reveal the test page. On that test page, check for a **baud rate**. We will need that number for our next step. Lost the test page?
+
  ![baud rate image](https://cdn-learn.adafruit.com/assets/assets/000/040/964/original/camera_raspberry_pi_components_test-baud.jpg)
 5. Depending on the **baud rate**, enter one of the following commands:
 	- If the **baud rate** is `192000`, enter this command in the terminal:
