@@ -5,7 +5,9 @@ Written (very quickly) with vanilla PHP & MySQL because it was what I knew those
 
 Code isn't amazing but it does the job. I will do my best to keep it backwards compatible as I (slowly) refactor.
 
-Latest (master) build is running on https://bpmct.net/projects/raspi
+Latest (master) build is running on https://raspi.tools
+
+Latest (dev) build is running on https://bpmct.net/projects/raspi
 
 ## Run this on your server:
 

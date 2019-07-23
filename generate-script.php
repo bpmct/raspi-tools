@@ -213,7 +213,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                         <input type="text" name="rpi-reporting-url" class="form-control"
                                             id="rpi-reporting-url"
-                                            value="<?php echo field_value("url", "https://bpmct.net/projects/raspi/ping"); ?>">
+                                            value="<?php echo field_value("url", "https://raspi.tools/ping"); ?>">
 
                                     </div>
                                 </div>
