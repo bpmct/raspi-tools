@@ -7,7 +7,7 @@ Code isn't amazing but it does the job. I will do my best to keep it backwards c
 
 Latest (master) build is running on https://raspi.tools
 
-Latest (dev) build is running on https://bpmct.net/projects/raspi
+Dev build is running on https://bpmct.net/projects/raspi
 
 ## Run this on your server:
 
