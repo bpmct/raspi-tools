@@ -118,3 +118,21 @@
     text-align: center;
 
 }
+
+.raspi-url-config-card {
+
+    margin-bottom: 15px;
+
+}
+
+.raspi-config-alert {
+
+    text-align: center;
+
+}
+
+.raspi-alert-sm {
+
+    font-size: 90%;
+
+}

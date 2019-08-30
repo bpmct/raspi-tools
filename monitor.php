@@ -201,7 +201,7 @@ if (isset($_GET['auto-check']) && $_GET['auto-check'] == "on") {
 
                                     <div class="cogs-spacer"></div>
 
-                                    <p class="add-link small"><a href="generate-script?reporting-script&group=<?php echo $group; ?>"><strong>Add a device:</strong> Generate an install link</a></p>
+                                    <p class="add-link small"><a href="generate-script?reporting-script&reporting-group=<?php echo $group; ?>"><strong>Add a device:</strong> Generate an install link</a></p>
 
                                 </div>
                                 <div class="modal-footer">
