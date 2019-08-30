@@ -64,7 +64,7 @@ script_append("fi");
 
 script_br();
 
-if ($config['use-reporting-script']) {
+if ($config['use-reporting']) {
 
     script_append("# ---- GENERATE REPORTING SCRIPT CRON JOB ----");
 
@@ -150,9 +150,9 @@ if ($config['use-reporting-script']) {
     script_append("#---- VNC Server ----");
 
 
-    if ($config['raspi-vnc'] == "yes")
+    if ($config['rpi-vnc'] == "yes")
         script_append("raspi-config nonint do_vnc 0");
-    elseif ($config['raspi-vnc'] == "no")
+    elseif ($config['rpi-vnc'] == "no")
         script_append("raspi-config nonint do_vnc 1");
 
 
@@ -163,9 +163,9 @@ if ($config['use-reporting-script']) {
     script_append("#---- SSH Server ----");
 
 
-    if ($config['raspi-ssh'] == "yes")
+    if ($config['rpi-ssh'] == "yes")
         script_append("raspi-config nonint do_ssh 0");
-    elseif ($config['raspi-ssh'] == "no")
+    elseif ($config['rpi-ssh'] == "no")
         script_append("raspi-config nonint do_ssh 1");
 
 

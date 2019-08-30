@@ -11,9 +11,38 @@ function field_value($get, $fallback = null) {
 
 }
 
+function field_disabled($field) {
+
+    if (isset($_GET["readonly-$field"]) && $_GET["readonly-$field"] == "true")
+        return "readonly";
+
+}
+
+function field_option($name, $value, $selected = false) {
+
+
+    echo "value=\"$value\"";
+
+    if (isset($_GET[$name]) && $_GET[$name] == $value) {
+
+        echo " selected";
+
+    } elseif (!isset($_GET[$name]) && $selected) {
+
+        echo " selected";
+
+    } elseif (isset($_GET["readonly-$name"]) && $_GET["readonly-$name"] == "true") {
+
+        echo " disabled";
+
+    }
+
+
+}
+
 $page = "generator";
-if (isset($_POST['done']) || isset($_GET['script'])) {
-    
+if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['script'])) {
+
     $page = "script";
 
     if (isset($_GET['script'])) {
@@ -38,6 +67,38 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
         $config = $_POST;
 
     }
+
+} elseif (isset($_POST['done']) && $_POST['done'] == "get-url") {
+
+    $page = "share-url";
+    
+} elseif(isset($_POST['generate-url'])) {
+
+    $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+    $first = true;
+
+    foreach($_POST as $item => $value) {
+
+        if ($item != "generate-url") {
+
+            if ($first) {
+
+                $url .= "?$item=$value";
+
+                $first = false;
+
+            } else {
+
+                $url .= "&$item=$value";
+
+            }
+
+        }
+
+
+    }
+
+    $page = "here-url";
 
 } elseif (isset($_GET['save_config'])) {
 
@@ -109,6 +170,10 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
             <div class="row">
 
+            <?php 
+            $bigColSize = "col-md-8";
+            if (! (isset($_GET['hide-sidebar']) && $_GET['hide-sidebar'] == "true")) { ?>
+
                 <div class="col-md-4">
 
                     <div class="list-group list-group-flush" id="commands">
@@ -128,7 +193,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
                             Set Password
                         </button>
 
-                        <button type="button" id="show-reporting-script" class="list-group-item list-group-item-action">
+                        <button type="button" id="show-reporting" class="list-group-item list-group-item-action">
                             <span class="badge badge-pill badge-info badge-dark"><i class="fa fa-server"></i></span>
                             Reporting Script
                         </button>
@@ -148,10 +213,39 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                 </div>
 
-                <div class="col-md-8">
+            <?php } else {
+                
+                $bigColSize = "col-md-8 offset-md-2";
+
+            } ?>
+
+                <div class="<?php echo $bigColSize; ?>">
                     <form name="generate-script" method="post" action="">
 
                         <div class="raspi-fields">
+
+                            <?php
+
+                            $readonly_message = false;
+                            foreach ($_GET as $field => $value) {
+
+                                if (strpos($field, 'readonly-') !== false) {
+
+                                    $readonly_message = true;
+
+                                }
+
+                            }
+
+                            if ($readonly_message) {
+
+                            ?>
+
+                            <div class="alert alert-info fade show raspi-config-alert" role="alert">
+                                <span class="raspi-alert-sm">Note: This is a custom configuration page, some fields may be disabled or auto-filled.</span>
+                            </div>
+
+                            <?php } ?>
 
                             <div class="raspi-field" id="empty">
 
@@ -170,7 +264,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
                                     <div class="col-sm-10">
 
                                         <input type="text" name="rpi-hostname" class="form-control" id="rpi-hostname"
-                                            placeholder="ex. bens-pi">
+                                            placeholder="ex. bens-pi" value="<?php echo field_value("hostname"); ?>" <?php echo field_disabled("hostname"); ?>>
 
                                     </div>
                                 </div>
@@ -187,7 +281,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                     <div class="col-sm-10">
 
-                                        <input type="text" name="rpi-password" class="form-control" id="passwordInput">
+                                        <input type="text" name="rpi-password" class="form-control" id="passwordInput" value="<?php echo field_value("password"); ?>" <?php echo field_disabled("hostname"); ?>>
 
                                     </div>
                                 </div>
@@ -196,9 +290,9 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                             </div>
 
-                            <div class="raspi-field" id="reporting-script">
+                            <div class="raspi-field" id="reporting">
 
-                                <input type="hidden" name="use-reporting-script" value="false">
+                                <input type="hidden" name="use-reporting" value="false">
 
                                 <h3><span class="badge badge-pill badge-info badge-dark"><i
                                             class="fa fa-server"></i></span> Reporting Script</h3>
@@ -213,7 +307,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                         <input type="text" name="rpi-reporting-url" class="form-control"
                                             id="rpi-reporting-url"
-                                            value="<?php echo field_value("url", "https://raspi.tools/ping"); ?>">
+                                            value="<?php echo field_value("reporting-url", "https://raspi.tools/ping"); ?>" <?php echo field_disabled("reporting-url"); ?>>
 
                                     </div>
                                 </div>
@@ -226,7 +320,7 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                         <input type="text" name="rpi-reporting-group" class="form-control"
                                             id="rpi-reporting-group" placeholder="ex. science-class"
-                                            value="<?php echo field_value("group"); ?>">
+                                            value="<?php echo field_value("reporting-group"); ?>" <?php echo field_disabled("reporting-group"); ?>>
 
                                     </div>
                                 </div>
@@ -237,15 +331,15 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                     <div class="col-sm-7">
 
-                                        <select name="rpi-reporting-freq" id="raspi-vnc-freq" class="form-control">
+                                        <select name="rpi-reporting-freq" id="rpi-vnc-freq" class="form-control" <?php echo field_disabled("reporting-freq"); ?>>
 
-                                            <option value="startup">Just on startup</option>
-                                            <option value="1min">Every minute</option>
-                                            <option value="5min">Every 5 minutes</option>
-                                            <option value="30min" selected>Every 30 minutes</option>
-                                            <option value="1hr">Every hour</option>
-                                            <option value="6hr">Every 6 hours</option>
-                                            <option value="daily">Daily</option>
+                                            <option <?php echo field_option("reporting-freq", "startup"); ?>>Just on startup</option>
+                                            <option <?php echo field_option("reporting-freq", "1min"); ?>>Every minute</option>
+                                            <option <?php echo field_option("reporting-freq", "5min"); ?>>Every 5 minutes</option>
+                                            <option <?php echo field_option("reporting-freq", "30min", true); ?>>Every 30 minutes</option>
+                                            <option <?php echo field_option("reporting-freq", "1hr"); ?>>Every hour</option>
+                                            <option <?php echo field_option("reporting-freq", "6hr"); ?>>Every 6 hours</option>
+                                            <option <?php echo field_option("reporting-freq", "daily"); ?>>Daily</option>
 
                                         </select>
 
@@ -263,10 +357,10 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                     <div class="col-sm-7">
 
-                                        <select name="raspi-vnc" id="raspi-vnc" class="form-control">
+                                        <select name="rpi-vnc" id="rpi-vnc" class="form-control" <?php echo field_disabled("vnc"); ?>>
 
-                                            <option value="yes" selected>Yes</option>
-                                            <option value="no">No</option>
+                                            <option <?php echo field_option("vnc", "yes", true); ?>>Yes</option>
+                                            <option <?php echo field_option("vnc", "no"); ?>>No</option>
 
                                         </select>
 
@@ -286,10 +380,10 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                                     <div class="col-sm-7">
 
-                                        <select name="raspi-ssh" id="raspi-ssh" class="form-control">
+                                        <select name="rpi-ssh" id="rpi-ssh" class="form-control" <?php echo field_disabled("ssh"); ?>>
 
-                                            <option value="yes" selected>Yes</option>
-                                            <option value="no">No</option>
+                                            <option <?php echo field_option("ssh", "yes", true); ?>>Yes</option>
+                                            <option <?php echo field_option("vnc", "no"); ?>>No</option>
 
                                         </select>
 
@@ -304,8 +398,13 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
                         <div class="raspi-form-buttons">
 
-                            <button type="submit" name="done" value="get-url" class="btn btn-lg btn-primary" disabled><i
+                        <?php if (!(isset($_GET['hide-gen-url']) && $_GET['hide-gen-url'] == "true")) { ?>
+
+                            <button type="submit" name="done" value="get-url" class="btn btn-lg btn-primary"><i
                                     class="fa fa-share-square" ></i> Share Config URL</button>
+
+                        <?php } ?>
+
                             <button type="submit" name="done" value="get-script" class="btn btn-lg btn-success"><i
                                     class="fa fa-terminal"></i> Generate Script</button>
 
@@ -380,11 +479,144 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
                 <button type="submit" class="btn btn-success btn-lg"><i class="fa fa-save"></i> Save this configuration</button>
             </p>
 
-            <?php } ?>
+            <?php }?>
 
             </form>
 
         </div>
+
+        <?php } elseif ($page == "share-url") { ?>
+
+            <div class="jumbotron raspi-jumbo">
+
+                <h1><span class="badge badge-pill badge-info badge-dark"><i class="fa fa-link"></i></span> Create a Custom URL:</h1>
+
+                <p class="text-center">Create a custom URL with your configuration autofilled. Good for a lot of devices or sharing with a class :)</p>
+
+                <form name="create-url" method="post" action="">
+
+                <div class="card raspi-url-config-card">
+                        
+                        <div class="card-body">
+
+                            <h3><i class="fa fa-cogs"></i> Page settings</h3>
+                            
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="hide-gen-url" name="hide-gen-url" value="true">
+                                <label class="form-check-label" for="hide-gen-url">Hide "Share Config URL"</label>
+                            </div>
+
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="hide-sidebar" name="hide-sidebar" value="true">
+                                <label class="form-check-label" for="hide-sidebar">Hide the sidebar</label>
+                            </div>
+
+                        </div>
+                
+                </div>
+
+                <?php
+
+                $sections = array();
+
+                foreach($_POST as $input => $value) {
+
+                    if (strpos($input, 'use-') === false && $input != "done") {
+
+                        $input = str_replace("rpi-", "", $input);
+
+                        $sections_string = json_encode($sections);
+
+                        $input_category = explode("-", $input)[0];
+
+                        if (strpos($sections_string, $input_category) !== false) {
+                        
+                ?>
+                <div class="card raspi-url-config-card">
+                        
+                        <div class="card-body">
+
+                            <h3><?php echo $input; ?></h3>
+
+                            <p><small>Current value is <?php if ($value) { echo "<code>$value</code>"; } else { echo "blank"; } ?></small></p>
+
+                            <input type="hidden" name="<?php echo $input; ?>" value="<?php echo $value; ?>" />
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="<?php echo $input; ?>" name="readonly-<?php echo $input; ?>" value="true">
+                                <label class="form-check-label" for="<?php echo $input; ?>">Make field uneditable</label>
+                            </div>
+
+
+                        </div>
+                
+                </div>
+                <?php
+                        }
+                    } elseif (strpos($input, 'use-') !== false) { 
+                
+                    $input = str_replace("use-", "", $input);
+
+                    if ($value == "true") {
+                        array_push($sections, $input);
+                
+                ?>
+
+                        <input type="hidden" name="show-<?php echo $input; ?>" value="true">
+
+                <?php 
+                   
+                    }
+
+                    }
+                }
+                ?>
+
+            <div class="text-right">
+
+            <button type="submit" name="generate-url" value="true" class="btn btn-lg btn-success"><i
+                class="fa fa-link" ></i> Get Config URL</button>
+            
+            </div>
+
+                </form>
+
+            </div>
+
+        <?php } elseif ($page == "here-url") { ?>
+
+            <div class="jumbotron raspi-jumbo">
+
+            <h1><span class="badge badge-pill badge-success"><i class="fa fa-link"></i></span> Here's your URL:</h1>
+
+            <input type="text" class="form-control" value="<?php echo $url; ?>" readonly>
+            <p class="text-center"><small><a href="<?php echo $url; ?>" target="_blank">Visit the page</a></small></p>
+
+            <h2 class="or">Or shorten this link:</h2>
+            
+            <p class="or2">You don't need an account or anything, but it will save the config to our databases.</p>
+            
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <div class="input-group">
+                        <input id="raspi-url" type="text" class="form-control unselectable" placeholder="Install bash script" 
+                            value="https://raspi.tools/c/lR2A2w4"
+                            aria-label="Install bash script" aria-describedby="basic-addon2" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-info unselectable" type="button" disabled><i class="fa fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br />
+
+            <p class="raspi-save">
+                <button type="submit" class="btn btn-success btn-lg" disabled>Coming soon :/</button>
+            </p>
+
+            </div>
 
         <?php } ?>
         <p class="text-muted raspi-credits small">Made with <i class="fa fa-heart"></i> by <a class="text-muted" href="https://ben.services" target="_blank" title="Ben Potter" alt="Ben Potter">Ben</a>.</p>
@@ -477,8 +709,13 @@ if (isset($_POST['done']) || isset($_GET['script'])) {
 
             foreach ($_GET as $key => $value) {
 
-                echo "show_field(\"" . $key . "\");\n";
+                if (strpos($key, 'show-') !== false) {
 
+                    $key = str_replace("show-", "", $key);
+                 
+                    echo "show_field(\"" . $key . "\");\n";
+
+                }
             }
 
             ?>
