@@ -70,7 +70,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
     
 } elseif(isset($_POST['generate-url'])) {
 
-    $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+    $url = "https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
     $first = true;
 
     foreach($_POST as $item => $value) {
@@ -278,7 +278,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                             <?php if (isset($_GET['s']) && $_GET['s'] == "t") { 
                                 
-                            $url = str_replace("&s=t", "", "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+                            $url = str_replace("&s=t", "", "https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
                                 
                             ?>
                                 <div class="alert alert-success" role="alert">
@@ -666,7 +666,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
                     <div class="col-md-6 offset-md-3">
                         <div class="input-group">
                             <input id="raspi-url" type="text" class="form-control unselectable" placeholder="Install bash script" 
-                                value="https://raspi.tools/c/lR2A2w4"
+                                value="ex. https://raspi.tools/c/lR2A2w4"
                                 aria-label="Shortened link" aria-describedby="basic-addon2" readonly>
                             <div class="input-group-append">
                                 <button class="btn btn-info unselectable" type="button" disabled><i class="fa fa-copy"></i></button>
