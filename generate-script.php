@@ -2,42 +2,14 @@
 
 require_once("db-conf.php");
 
-function field_value($get, $fallback = null) {
-
-    if (isset($_GET[$get]))
-        return htmlentities($_GET[$get]);
-    else
-        return $fallback;
-
-}
-
-function field_disabled($field) {
-
-    if (isset($_GET["readonly-$field"]) && $_GET["readonly-$field"] == "true")
-        return "readonly";
-
-}
-
-function field_option($name, $value, $selected = false) {
-
-
-    echo "value=\"$value\"";
-
-    if (isset($_GET[$name]) && $_GET[$name] == $value) {
-
-        echo " selected";
-
-    } elseif (!isset($_GET[$name]) && $selected) {
-
-        echo " selected";
-
-    } elseif (isset($_GET["readonly-$name"]) && $_GET["readonly-$name"] == "true") {
-
-        echo " disabled";
-
+function generateRandomString($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
     }
-
-
+    return $randomString;
 }
 
 $page = "generator";
@@ -68,6 +40,30 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
     }
 
+} elseif (isset($_POST['shorten-url']) && $_POST['shorten-url'] == "true") {
+    
+  $params = urldecode($_POST['params']);
+
+  $slug = generateRandomString(6);
+
+
+  try {
+
+      $insert_config = $db->prepare("INSERT INTO urls(slug,config,extras) VALUES(:field1,:field2,:field3)");
+      $insert_config->execute(array(':field1' => $slug, ':field2' => $params, ':field3' => ""));
+
+  } catch(PDOException $ex) {
+
+      die($ex->getMessage());
+  
+  }
+  
+  $affected_rows = $insert_config->rowCount();
+
+   header("LOCATION: c/$slug&s=t");
+
+   die("");
+    
 } elseif (isset($_POST['done']) && $_POST['done'] == "get-url") {
 
     $page = "share-url";
@@ -109,16 +105,6 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
     }
 
-    function generateRandomString($length = 10) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
-    }
-
     $slug = generateRandomString();
 
     try {
@@ -155,7 +141,12 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
     <link href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" crossorigin="anonymous">
 
     <!-- Additional CSS -->
+    <?php if (isset($_GET['slug'])) { ?>
+    <link rel="stylesheet" href="../css/generate-additional.css">
+    <?php } else { ?>
     <link rel="stylesheet" href="css/generate-additional.css">
+    <?php } ?>
+
 
     <title>Generate a Raspberry Pi Onboarding Script</title>
 </head>
@@ -163,7 +154,68 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 <body>
 
     <div class="container">
-        <?php if ($page == "generator") { ?>
+        <?php if ($page == "generator") { 
+        
+        if (isset($_GET['slug'])) {
+
+            $slug = str_replace("/", "", $_GET['slug']);
+        
+            $find_script = $db->prepare("SELECT * FROM urls WHERE slug=?");
+            $find_script->bindValue(1, $slug, PDO::PARAM_STR);
+            $find_script->execute();
+        
+            $script = $find_script->fetchAll(PDO::FETCH_ASSOC);
+        
+            if (count($script) == 1) {
+        
+                $params = json_decode($script[0]['config'], true);
+        
+            }
+        
+        } else {
+
+            $params = $_GET;
+
+        }
+
+        function field_value($params, $get, $fallback = null) {
+
+            if (isset($params[$get]))
+                return htmlentities($params[$get]);
+            else
+                return $fallback;
+        
+        }
+        
+        function field_disabled($params, $field) {
+        
+            if (isset($params["readonly-$field"]) && $params["readonly-$field"] == "true")
+                return "readonly";
+        
+        }
+        
+        function field_option($params, $name, $value, $selected = false) {
+        
+            echo "value=\"$value\"";
+        
+            if (isset($params[$name]) && $params[$name] == $value) {
+        
+                echo " selected";
+        
+            } elseif (!isset($params[$name]) && $selected) {
+        
+                echo " selected";
+        
+            } elseif (isset($params["readonly-$name"]) && $params["readonly-$name"] == "true") {
+        
+                echo " disabled";
+        
+            }
+        
+        
+        }
+            
+        ?>
         <div class="jumbotron raspi-jumbo">
 
             <h1><i class="fab fa-raspberry-pi"></i> Generate a Raspberry Pi Onboarding Script</h1>
@@ -172,7 +224,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
             <?php 
             $bigColSize = "col-md-8";
-            if (! (isset($_GET['hide-sidebar']) && $_GET['hide-sidebar'] == "true")) { ?>
+            if (! (isset($params['hide-sidebar']) && $params['hide-sidebar'] == "true")) { ?>
 
                 <div class="col-md-4">
 
@@ -224,20 +276,31 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                         <div class="raspi-fields">
 
-                            <?php
+                            <?php if (isset($_GET['s']) && $_GET['s'] == "t") { 
+                                
+                            $url = str_replace("&s=t", "", "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+                                
+                            ?>
+                                <div class="alert alert-success" role="alert">
+                                <button type="button" class="close" onclick="window.location.href = '<?php echo $url; ?>';" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                    <h4 class="alert-heading">Awesome!</h4>
+                                    <hr />
+                                    <p>You've created a custom configuration page. Here's your short URL to share:</p>
+                                    <div class="input-group">
+                                    
+                                        <input type="text" id="scriptOneLine" class="form-control" placeholder="URL is in here :)" 
+                                            value="<?php echo $url; ?>"
+                                            aria-label="Install bash script" aria-describedby="basic-addon2">
+                                        <div class="input-group-append">
+                                            <button id="copy" class="btn btn-info" type="button"><i class="fa fa-copy"></i></button>
+                                        </div>
+                                    </div>
 
-                            $readonly_message = false;
-                            foreach ($_GET as $field => $value) {
+                                </div>
 
-                                if (strpos($field, 'readonly-') !== false) {
-
-                                    $readonly_message = true;
-
-                                }
-
-                            }
-
-                            if ($readonly_message) {
+                            <?php } else if (count($params) > 1) {
 
                             ?>
 
@@ -259,12 +322,12 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
                                 <input type="hidden" name="use-hostname" value="false">
 
                                 <div class="form-group row">
-                                    <label for="rpi-hostname" class="col-sm-2 col-form-label">Hostname:</label>
+                                    <label for="rpi-hostname" class="col-sm-5 col-form-label">Hostname:</label>
 
-                                    <div class="col-sm-10">
+                                    <div class="col-sm-7">
 
                                         <input type="text" name="rpi-hostname" class="form-control" id="rpi-hostname"
-                                            placeholder="ex. bens-pi" value="<?php echo field_value("hostname"); ?>" <?php echo field_disabled("hostname"); ?>>
+                                            placeholder="ex. bens-pi" value="<?php echo field_value($params, "hostname"); ?>" <?php echo field_disabled($params, "hostname"); ?>>
 
                                     </div>
                                 </div>
@@ -277,11 +340,11 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
                                 <input type="hidden" name="use-password" value="false">
 
                                 <div class="form-group row">
-                                    <label for="passwordInput" class="col-sm-2 col-form-label">Password:</label>
+                                    <label for="passwordInput" class="col-sm-5 col-form-label">Password:</label>
 
-                                    <div class="col-sm-10">
+                                    <div class="col-sm-7">
 
-                                        <input type="text" name="rpi-password" class="form-control" id="passwordInput" value="<?php echo field_value("password"); ?>" <?php echo field_disabled("hostname"); ?>>
+                                        <input type="text" name="rpi-password" class="form-control" id="passwordInput" value="<?php echo field_value($params, "password"); ?>" <?php echo field_disabled($params, "hostname"); ?>>
 
                                     </div>
                                 </div>
@@ -307,7 +370,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                                         <input type="text" name="rpi-reporting-url" class="form-control"
                                             id="rpi-reporting-url"
-                                            value="<?php echo field_value("reporting-url", "https://raspi.tools/ping"); ?>" <?php echo field_disabled("reporting-url"); ?>>
+                                            value="<?php echo field_value($params, "reporting-url", "https://raspi.tools/ping"); ?>" <?php echo field_disabled($params, "reporting-url"); ?>>
 
                                     </div>
                                 </div>
@@ -320,7 +383,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                                         <input type="text" name="rpi-reporting-group" class="form-control"
                                             id="rpi-reporting-group" placeholder="ex. science-class"
-                                            value="<?php echo field_value("reporting-group"); ?>" <?php echo field_disabled("reporting-group"); ?>>
+                                            value="<?php echo field_value($params, "reporting-group"); ?>" <?php echo field_disabled($params, "reporting-group"); ?>>
 
                                     </div>
                                 </div>
@@ -331,15 +394,15 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                                     <div class="col-sm-7">
 
-                                        <select name="rpi-reporting-freq" id="rpi-vnc-freq" class="form-control" <?php echo field_disabled("reporting-freq"); ?>>
+                                        <select name="rpi-reporting-freq" id="rpi-vnc-freq" class="form-control" <?php echo field_disabled($params, "reporting-freq"); ?>>
 
-                                            <option <?php echo field_option("reporting-freq", "startup"); ?>>Just on startup</option>
-                                            <option <?php echo field_option("reporting-freq", "1min"); ?>>Every minute</option>
-                                            <option <?php echo field_option("reporting-freq", "5min"); ?>>Every 5 minutes</option>
-                                            <option <?php echo field_option("reporting-freq", "30min", true); ?>>Every 30 minutes</option>
-                                            <option <?php echo field_option("reporting-freq", "1hr"); ?>>Every hour</option>
-                                            <option <?php echo field_option("reporting-freq", "6hr"); ?>>Every 6 hours</option>
-                                            <option <?php echo field_option("reporting-freq", "daily"); ?>>Daily</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "startup"); ?>>Just on startup</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "1min"); ?>>Every minute</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "5min"); ?>>Every 5 minutes</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "30min", true); ?>>Every 30 minutes</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "1hr"); ?>>Every hour</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "6hr"); ?>>Every 6 hours</option>
+                                            <option <?php echo field_option($params, "reporting-freq", "daily"); ?>>Daily</option>
 
                                         </select>
 
@@ -357,10 +420,10 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                                     <div class="col-sm-7">
 
-                                        <select name="rpi-vnc" id="rpi-vnc" class="form-control" <?php echo field_disabled("vnc"); ?>>
+                                        <select name="rpi-vnc" id="rpi-vnc" class="form-control" <?php echo field_disabled($params, "vnc"); ?>>
 
-                                            <option <?php echo field_option("vnc", "yes", true); ?>>Yes</option>
-                                            <option <?php echo field_option("vnc", "no"); ?>>No</option>
+                                            <option <?php echo field_option($params, "vnc", "yes", true); ?>>Yes</option>
+                                            <option <?php echo field_option($params, "vnc", "no"); ?>>No</option>
 
                                         </select>
 
@@ -380,10 +443,10 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                                     <div class="col-sm-7">
 
-                                        <select name="rpi-ssh" id="rpi-ssh" class="form-control" <?php echo field_disabled("ssh"); ?>>
+                                        <select name="rpi-ssh" id="rpi-ssh" class="form-control" <?php echo field_disabled($params, "ssh"); ?>>
 
-                                            <option <?php echo field_option("ssh", "yes", true); ?>>Yes</option>
-                                            <option <?php echo field_option("vnc", "no"); ?>>No</option>
+                                            <option <?php echo field_option($params, "ssh", "yes", true); ?>>Yes</option>
+                                            <option <?php echo field_option($params, "vnc", "no"); ?>>No</option>
 
                                         </select>
 
@@ -398,7 +461,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
 
                         <div class="raspi-form-buttons">
 
-                        <?php if (!(isset($_GET['hide-gen-url']) && $_GET['hide-gen-url'] == "true")) { ?>
+                        <?php if (!(isset($params['hide-gen-url']) && $params['hide-gen-url'] == "true")) { ?>
 
                             <button type="submit" name="done" value="get-url" class="btn btn-lg btn-primary"><i
                                     class="fa fa-share-square" ></i> Share Config URL</button>
@@ -597,24 +660,30 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
             
             <p class="or2">You don't need an account or anything, but it will save the config to our databases.</p>
             
-            <div class="row">
-                <div class="col-md-6 offset-md-3">
-                    <div class="input-group">
-                        <input id="raspi-url" type="text" class="form-control unselectable" placeholder="Install bash script" 
-                            value="https://raspi.tools/c/lR2A2w4"
-                            aria-label="Install bash script" aria-describedby="basic-addon2" readonly>
-                        <div class="input-group-append">
-                            <button class="btn btn-info unselectable" type="button" disabled><i class="fa fa-copy"></i></button>
+            <form name="shorten-link" method="post" action="">
+
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <div class="input-group">
+                            <input id="raspi-url" type="text" class="form-control unselectable" placeholder="Install bash script" 
+                                value="https://raspi.tools/c/lR2A2w4"
+                                aria-label="Shortened link" aria-describedby="basic-addon2" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-info unselectable" type="button" disabled><i class="fa fa-copy"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <br />
+                <input type="hidden" name="params" value="<?php echo urlencode(json_encode($_POST)); ?>" />
 
-            <p class="raspi-save">
-                <button type="submit" class="btn btn-success btn-lg" disabled>Coming soon :/</button>
-            </p>
+                <br />
+
+                <p class="raspi-save">
+                    <button type="submit" name="shorten-url" value="true" class="btn btn-success btn-lg"><i class="fa fa-link"></i> Generate short link</button>
+                </p>
+
+            </form>
 
             </div>
 
@@ -707,7 +776,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
         $(document).ready(function () {
             <?php
 
-            foreach ($_GET as $key => $value) {
+            foreach ($params as $key => $value) {
 
                 if (strpos($key, 'show-') !== false) {
 
@@ -731,7 +800,7 @@ if ((isset($_POST['done']) && $_POST['done'] == "get-script") || isset($_GET['sc
             var copyText = document.getElementById("scriptOneLine");
             copyText.select();
             document.execCommand("copy");
-            alert("Copied! Now paste it into your terminal (CTRL+ALT+T)");
+            alert("Copied to your clipboard!");
         
         
         });

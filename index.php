@@ -23,7 +23,7 @@
     <div class="row h-100">
       <div class="col-sm-12 my-auto portal">
         <h1>raspi.tools</h1>
-        <sub>A collection of tools & tutorials for getting started with the Raspberry Pi 😊</sub>
+        <p><sub>A collection of tools & tutorials for getting started with the Raspberry Pi 😊</sub></p>
         <a href="generate-script" class="btn btn-lg btn-success btn-portal">Generate Onboarding/Configuration Script</a>
         <a href="monitor" class="btn btn-lg btn-primary btn-portal">Monitoring</a>
         <a href="tutorials" class="btn btn-lg btn-info btn-portal">Tutorials</a>
